@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import { useUser } from "@/hooks/use-user";
 
-import { Plus, Mail, Unplug, RefreshCw } from "lucide-react";
+import { Plus, Mail, Unplug, RefreshCw, ChevronDown, ChevronUp, Copy, Check } from "lucide-react";
 import { toast } from "@/components/ui/toast-provider";
 import { SimpleConfirmModal } from "@/components/ui/simple-confirm-modal";
 
@@ -52,6 +52,84 @@ function timeAgo(dateStr: string): string {
     if (hrs < 24) return `${hrs} hr${hrs > 1 ? "s" : ""} ago`;
     const days = Math.floor(hrs / 24);
     return `${days} day${days > 1 ? "s" : ""} ago`;
+}
+
+function OAuthSetupGuide() {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
+
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://yourdomain.com';
+  const uris = [
+    `${origin}/api/auth/callback/google`,
+    `${origin}/api/gmail-connect/callback/google`,
+  ];
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(text);
+    setTimeout(() => setCopied(null), 2000);
+  };
+
+  return (
+    <div className="mb-6 border border-blue-200 rounded-xl bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-5 py-4 text-left"
+      >
+        <span className="flex items-center gap-2 text-sm font-medium text-blue-700 dark:text-blue-400">
+          ⚙️ First time setup? Google Developer OAuth Configuration Guide
+        </span>
+        {open ? (
+          <ChevronUp className="w-4 h-4 text-blue-500" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-blue-500" />
+        )}
+      </button>
+
+      {open && (
+        <div className="px-5 pb-5 space-y-4">
+          <p className="text-sm text-blue-700 dark:text-blue-300">
+            To connect Gmail accounts, you need to configure your Google Cloud project. Follow these steps:
+          </p>
+
+          <ol className="text-sm text-blue-700 dark:text-blue-300 space-y-2 list-decimal list-inside">
+            <li>Go to <a href="https://console.cloud.google.com" target="_blank" rel="noopener noreferrer" className="underline font-medium">Google Cloud Console</a></li>
+            <li>Create a new project (or select an existing one)</li>
+            <li>Enable the <strong>Gmail API</strong></li>
+            <li>Go to <strong>APIs & Services → Credentials → Create OAuth 2.0 Client ID</strong></li>
+            <li>Set application type to <strong>Web Application</strong></li>
+            <li>Add the following to <strong>Authorized Redirect URIs</strong>:</li>
+          </ol>
+
+          <div className="space-y-2">
+            {uris.map((uri) => (
+              <div
+                key={uri}
+                className="flex items-center justify-between gap-2 bg-white dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg px-4 py-2"
+              >
+                <code className="text-xs text-blue-800 dark:text-blue-200 break-all">{uri}</code>
+                <button
+                  onClick={() => copyToClipboard(uri)}
+                  className="shrink-0 text-blue-500 hover:text-blue-700 transition-colors"
+                >
+                  {copied === uri ? (
+                    <Check className="w-4 h-4 text-green-500" />
+                  ) : (
+                    <Copy className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <ol start={7} className="text-sm text-blue-700 dark:text-blue-300 space-y-2 list-decimal list-inside">
+            <li>Copy your <strong>Client ID</strong> and <strong>Client Secret</strong> into your <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">.env</code> file</li>
+            <li>Restart the app — you're ready to connect accounts!</li>
+          </ol>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function AccountsPage() {
@@ -190,6 +268,7 @@ export default function AccountsPage() {
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-semibold tracking-tight text-white">Gmail Accounts</h1>
                 </div>
+                <OAuthSetupGuide />
                 <div
                     className="rounded-[10px] flex flex-col items-center justify-center py-20 px-6 text-center"
                     style={{ backgroundColor: "#141414", border: "1px solid #222222" }}
@@ -247,6 +326,8 @@ export default function AccountsPage() {
                     {isConnecting ? "Connecting..." : "Connect Account"}
                 </button>
             </div>
+
+            <OAuthSetupGuide />
 
             {/* Account cards */}
             <div className="space-y-3">
