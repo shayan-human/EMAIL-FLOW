@@ -81,7 +81,13 @@ App will be available at `http://localhost:3000`
 
 ### 5. Initialize the database
 
-On first run, the database is automatically initialized from the migration files in `campaign-backend/db/migrations/`.
+On first run, connect to your PostgreSQL instance and run the schema file:
+
+```bash
+docker exec -i emailflow-db psql -U emailflow -d emailflow < campaign-backend/db/schema.sql
+```
+
+This creates all required tables. Only needs to be done once.
 
 ---
 
