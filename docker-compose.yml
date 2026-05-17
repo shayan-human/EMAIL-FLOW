@@ -9,7 +9,6 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./campaign-backend/db/migrations:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-emailflow}"]
       interval: 10s
@@ -17,9 +16,7 @@ services:
       retries: 5
 
   backend:
-    build:
-      context: ./campaign-backend
-      dockerfile: Dockerfile
+    image: emailfloww/email-flow-backend:latest
     container_name: emailflow-backend
     restart: unless-stopped
     depends_on:
@@ -40,9 +37,7 @@ services:
       - "3001:3001"
 
   frontend:
-    build:
-      context: ./campaign-scheduler
-      dockerfile: Dockerfile
+    image: emailfloww/email-flow-frontend:latest
     container_name: emailflow-frontend
     restart: unless-stopped
     depends_on:
